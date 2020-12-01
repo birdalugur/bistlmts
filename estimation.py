@@ -25,8 +25,8 @@ data['mid_price'] = (data['bid_price'] + data['ask_price']) / 2
 # Create a pivot table using mid price, symbol and time
 mid_price = data.pivot_table(index='time', columns='symbol', values='mid_price', aggfunc='mean')
 
-# Convert to 1 minute data (agg func = mean)
-mid_price = mid_price.resample('1Min').mean()
+# Convert to 1 minute data for every day (agg func = mean)
+mid_price = mid_price.groupby([pd.Grouper(freq='D'), pd.Grouper(freq='1Min')]).mean()
 
 # Calculate natural logarithms
 log_mid = np.log(mid_price)
