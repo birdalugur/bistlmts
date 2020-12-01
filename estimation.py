@@ -13,8 +13,11 @@ webbrowser.open('https://www.rdocumentation.org/packages/LongMemoryTS/versions/0
 # Create lmts object
 lmts = importr('LongMemoryTS')
 
+# directory path to read data
+folder_path = 'data/'
+
 # Read all data in the specified folder
-data = mydata.read('data/')
+data = mydata.read(folder_path)
 
 # Calculate the middle price
 data['mid_price'] = (data['bid_price'] + data['ask_price']) / 2
