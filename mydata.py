@@ -86,3 +86,7 @@ def sample():
     data = (ranf(len(dates) * len(bist_codes)) * 10).reshape(len(dates), len(bist_codes))
 
     return pd.DataFrame(data, index=dates, columns=bist_codes)
+
+
+def sort(x):
+    return pd.Series(x.sort_values(ascending=False).index, index=range(len(x)))

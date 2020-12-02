@@ -1,17 +1,10 @@
-import webbrowser
 import mydata
 import numpy as np
 import itertools
-from rpy2.robjects.packages import importr
-from rpy2 import robjects
-from math import floor
+from lmts import elw, elw2s, gph, hou_perron, local_w
+
 import pandas as pd
-
-# Open the LongMemoryTS package documentation page.
-webbrowser.open('https://www.rdocumentation.org/packages/LongMemoryTS/versions/0.1.0')
-
-# Create lmts object
-lmts = importr('LongMemoryTS')
+from pandas import offsets
 
 # directory path to read data
 folder_path = 'data/'
@@ -26,79 +19,38 @@ data['mid_price'] = (data['bid_price'] + data['ask_price']) / 2
 mid_price = data.pivot_table(index='time', columns='symbol', values='mid_price', aggfunc='mean')
 
 # Convert to 1 minute data for every day (agg func = mean)
-mid_price = mid_price.groupby([pd.Grouper(freq='D'), pd.Grouper(freq='1Min')]).mean()
+mid_price = mid_price.groupby(pd.Grouper(freq='D')).resample('1Min').mean().droplevel(0)
 
 # Calculate natural logarithms
 log_mid = np.log(mid_price)
 
-# Create all pairs
-log_mid = [(lambda x: log_mid.loc[:, x])(pair) for pair in itertools.combinations(log_mid.columns, 2)]
+# Example data for test
+exdata = (log_mid + 2 ** np.e).set_index(log_mid.index + offsets.Day())
+exdata + exdata.shift()
+log_mid = pd.concat([log_mid, exdata])
 
-# calculate pair diff
-log_mid = list(map(lambda x: (x.iloc[:, 0] - x.iloc[:, 1])._set_name('_'.join(x.columns)), log_mid))
+# Pair names
+pair_names = list(itertools.combinations(log_mid.columns, 2))
+
+# Calculate the difference of all pairs (435 pair)
+all_pairs = list(map(lambda x: (log_mid.loc[:, x[0]] - log_mid.loc[:, x[1]])
+                     ._set_name('_'.join(x)), pair_names))
 
 # Remove NaN's
-log_mid = [(lambda x: x.dropna())(pair) for pair in log_mid]
+all_pairs = [(lambda x: x.dropna())(pair) for pair in all_pairs]
 
-# HH:MM:SS is being removed from the index
-log_mid = list(map(lambda x: x.droplevel(1), log_mid))
+# pairs concatenate in single df
+all_pairs = pd.concat(all_pairs, axis=1)
 
-# >>>>>> estimation functions >>>>>>>>>
+# >>>>>> estimation >>>>>>>>>
 
-# Converting to r objects
-r_vectors = list(map(robjects.FloatVector, log_mid))
+elw_data = all_pairs.resample('D').apply(elw)
+elw2s_data = all_pairs.resample('D').apply(elw2s)
+gph_data = all_pairs.resample('D').apply(gph)
+hou_perron_data = all_pairs.resample('D').apply(hou_perron)
+local_w_data = all_pairs.resample('D').apply(local_w)
 
-# parameters can be changed as specified in the documentation
+# <<<<<< estimation <<<<<<<<<
 
-elw = [lmts.ELW(vector, **{'m': floor(1 + len(vector) ** 0.6), 'mean.est': "mean"})[0][0] for vector in r_vectors]
-
-# TODO: @taper parametresi 'Velasco' olarak atandığında hata alınır.
-elw2s = [lmts.ELW2S(vector, **{'m': floor(1 + len(vector) ** 0.6), 'trend_order': 1, 'taper': 'HC'})[0][0] for vector in
-         r_vectors]
-
-gph = [lmts.gph(vector, **{'m': floor(1 + len(vector) ** 0.6), 'l': 1})[0] for vector in r_vectors]
-
-hou_perron = [lmts.Hou_Perron(vector, **{'m': floor(1 + len(vector) ** 0.6)})[0][0] for vector in r_vectors]
-
-# TODO: @taper parametresi 'Velasco' olarak atandığında hata alınır.
-local_w = [lmts.local_W(vector,
-                        **{'int': robjects.FloatVector([-0.5, 2.5]), 'm': floor(1 + len(vector) ** 0.6),
-                           'diff_param': 1,
-                           'taper': 'HC', 'l': 1})[0][0] for vector in r_vectors]
-
-# <<<<<< estimation functions <<<<<<<<<
-
-
-pair_names = ['_'.join(pair) for pair in itertools.combinations(mid_price.columns, 2)]
-
-estimation = pd.DataFrame(data={'elw': elw, 'elw2s': elw2s, 'gph': gph, 'hou_perron': hou_perron}, index=pair_names)
-
-estimation.to_csv('estimation.csv')
-
-
-def func(x):
-
-    vector = robjects.FloatVector(x)
-    elw = lmts.ELW(vector, **{'m': floor(1 + len(vector) ** 0.6), 'mean.est': "mean"})[0][0]
-
-    # TODO: @taper parametresi 'Velasco' olarak atandığında hata alınır.
-    elw2s = lmts.ELW2S(vector, **{'m': floor(1 + len(vector) ** 0.6), 'trend_order': 1, 'taper': 'HC'})[0][0]
-
-    gph = lmts.gph(vector, **{'m': floor(1 + len(vector) ** 0.6), 'l': 1})[0]
-
-    hou_perron = lmts.Hou_Perron(vector, **{'m': floor(1 + len(vector) ** 0.6)})[0][0]
-
-    # TODO: @taper parametresi 'Velasco' olarak atandığında hata alınır.
-    local_w = lmts.local_W(vector,
-                           **{'int': robjects.FloatVector([-0.5, 2.5]), 'm': floor(1 + len(vector) ** 0.6),
-                              'diff_param': 1,
-                              'taper': 'HC', 'l': 1})[0][0]
-    # estimation = pd.DataFrame(data={'elw': elw, 'elw2s': elw2s, 'gph': gph, 'hou_perron': hou_perron}, index=[x.name])
-    keys = ['elw', 'elw2s', 'gph', 'hou_perron']
-    date = [x.index[0], x.index[0], x.index[0], x.index[0]]
-    estimation = pd.DataFrame(data=[elw, elw2s, gph, hou_perron], columns=[x.name], index=[date, keys])
-
-    return estimation
-
-
-func(asd)
+# Sort the d's in ascending order. To sort by day, pass axis=0.
+sorted_elw = elw_data.apply(mydata.sort, axis=1)
