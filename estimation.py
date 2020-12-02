@@ -52,5 +52,8 @@ local_w_data = all_pairs.resample('D').apply(local_w)
 
 # <<<<<< estimation <<<<<<<<<
 
-# Sort the d's in ascending order. To sort by day, pass axis=0.
+# Sort the d's in descending order. To sort by day, pass axis=0.
 sorted_elw = elw_data.apply(mydata.sort, axis=1)
+
+# intersection of the lowest 10 percent
+mydata.intersect(sorted_elw, 10)

@@ -90,3 +90,14 @@ def sample():
 
 def sort(x):
     return pd.Series(x.sort_values(ascending=False).index, index=range(len(x)))
+
+
+def intersect(d, percent):
+    start = int(len(d.columns) * (100 - percent) / 100)
+    end = len(d.columns)
+    _slice = d[range(start, end)]
+    sets = iter(map(set, _slice.values))
+    result = sets.__next__()
+    for s in sets:
+        result = result.intersection(s)
+    return result
