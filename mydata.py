@@ -4,8 +4,6 @@ BIST30 = ["ARCLK", "ASELS", "BIMAS", "DOHOL", "EKGYO", "FROTO", "HALKB", "GARAN"
           "KRDMD", "AKBNK", "PETKM", "PGSUS", "SAHOL", "SISE", "EREGL", "SODA", "TAVHL", "TCELL", "THYAO", "TKFEN",
           "TOASO", "TSKB", "TTKOM", "TUPRS", "VAKBN", "YKBNK"]
 
-parse_dates = ['date']
-
 
 def download(symbols: list, start_date: str, end_date: str) -> pd.DataFrame:
     """
@@ -31,12 +29,13 @@ def is_bist30(x: str) -> bool:
     return False
 
 
-def read(path: str) -> pd.DataFrame:
+def read(path: str, datecol: str = 'time') -> pd.DataFrame:
     """
     Bir klasörden csv verilerini okuyun.
 
     Args:
         path : Klasöre ait yol
+        datecol : Datetime column. default 'time'.
     """
     from os import listdir
 
@@ -50,7 +49,7 @@ def read(path: str) -> pd.DataFrame:
                 all_data.append(
                     pd.read_csv(_path,
                                 dtype=dt,
-                                converters={'time': lambda x: pd.Timestamp(int(x))})
+                                converters={datecol: lambda x: pd.Timestamp(int(x))})
                 )
             except pd.errors.EmptyDataError:
                 print("Empty Data:\n", _path)

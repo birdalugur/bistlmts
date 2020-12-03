@@ -1,14 +1,23 @@
-import webbrowser
+"""
+This module contains functions defined in the R's LongMemoryTS package.
+For documentation, use the docs() function.
+"""
+
 from math import floor
 
 from rpy2 import robjects
 from rpy2.robjects.packages import importr
 
-# Open the LongMemoryTS package documentation page.
-webbrowser.open('https://www.rdocumentation.org/packages/LongMemoryTS/versions/0.1.0')
-
 # Create lmts object
 lmts = importr('LongMemoryTS')
+
+
+def docs():
+    """
+    Open the LongMemoryTS package documentation page.
+    """
+    import webbrowser
+    webbrowser.open('https://www.rdocumentation.org/packages/LongMemoryTS/versions/0.1.0')
 
 
 def convert_Rvectors(values):
