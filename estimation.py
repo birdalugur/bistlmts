@@ -2,9 +2,9 @@ import mydata
 import numpy as np
 import itertools
 from lmts import elw, elw2s, gph, hou_perron, local_w
+from plot import candlestick, export_chart
 
 import pandas as pd
-from pandas import offsets
 
 # directory path to read data
 folder_path = 'data/'
@@ -24,11 +24,6 @@ mid_price = mid_price.groupby(pd.Grouper(freq='D')).resample('1Min').mean().drop
 # Calculate natural logarithms
 log_mid = np.log(mid_price)
 
-# Example data for test
-exdata = (log_mid + 2 ** np.e).set_index(log_mid.index + offsets.Day())
-exdata + exdata.shift()
-log_mid = pd.concat([log_mid, exdata])
-
 # Pair names
 pair_names = list(itertools.combinations(log_mid.columns, 2))
 
@@ -43,13 +38,11 @@ all_pairs = [(lambda x: x.dropna())(pair) for pair in all_pairs]
 all_pairs = pd.concat(all_pairs, axis=1)
 
 # >>>>>> estimation >>>>>>>>>
-
 elw_data = all_pairs.resample('D').apply(elw)
 elw2s_data = all_pairs.resample('D').apply(elw2s)
 gph_data = all_pairs.resample('D').apply(gph)
 hou_perron_data = all_pairs.resample('D').apply(hou_perron)
 local_w_data = all_pairs.resample('D').apply(local_w)
-
 # <<<<<< estimation <<<<<<<<<
 
 # Sort the d's in descending order. To sort by day, pass axis=0.
@@ -57,3 +50,16 @@ sorted_elw = elw_data.apply(mydata.sort, axis=1)
 
 # intersection of the lowest 10 percent
 mydata.intersect(sorted_elw, 10)
+
+# >>>>>> Candlestick >>>>>>>>>
+# Get any pair.
+akbnk_arclk = all_pairs['AKBNK_ARCLK']
+
+# Create a figure. 'D' describes daily aggregation.
+fig = candlestick(akbnk_arclk, 'D')
+
+# Show graph
+fig.show()
+
+export_chart(fig, name='akbnk_arclk')
+# <<<<<< Candlestick <<<<<<<<<

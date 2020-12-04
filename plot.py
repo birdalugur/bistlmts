@@ -32,7 +32,7 @@ def ohlc(time_series) -> dict:
     return {'open': _open, 'high': _high, 'low': _low, 'close': _close}
 
 
-def candlestick(data, offset):
+def candlestick(data, offset='D'):
     ohcl = data.resample(offset).apply(ohlc)
     _time = ohcl.index
     _open, _high, _low, _close = [], [], [], []
@@ -59,14 +59,13 @@ def export_chart(fig: go.Figure, name: str, location: str = None):
         name : File name
     """
     from plotly.offline import plot
-    from os import mkdir
+    from os import mkdir, listdir
 
     if location is None:
-        mkdir('charts')
+        if 'charts' not in listdir():
+            mkdir('charts')
         location = 'charts'
 
     _path = location + '/' + name + '.html'
 
-    plot(fig)
-
-
+    plot(fig, auto_open=False, filename=_path)
