@@ -7,7 +7,7 @@ from plot import candlestick, export_chart
 import pandas as pd
 
 # directory path to read data
-folder_path = 'data/'
+folder_path = '//10.1.1.10/shared/tob_changes_bist/202008/eq/'
 
 # Read all data in the specified folder
 data = mydata.read(folder_path)
@@ -62,4 +62,10 @@ fig = candlestick(akbnk_arclk, 'D')
 fig.show()
 
 export_chart(fig, name='akbnk_arclk')
+
+# Export all charts
+for name in all_pairs.columns:
+    f = candlestick(all_pairs[name], 'D')
+    export_chart(f, name)
+
 # <<<<<< Candlestick <<<<<<<<<
