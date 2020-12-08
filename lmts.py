@@ -30,14 +30,6 @@ def convert_Rvectors(values):
     return vector
 
 
-def isnull(values) -> bool:
-    """
-    Check empty data
-    """
-    if isinstance(values, pd.Series) and values.dropna().size == 0:
-        return True
-
-
 # >>>>>> estimation functions >>>>>>>>>
 
 
@@ -45,7 +37,7 @@ def elw(values, mean_est="mean"):
     """
     parameters can be changed as specified in the documentation
     """
-    if isnull(values):
+    if mydata.isnull(values):
         return None
     vector = convert_Rvectors(values)
     _elw = lmts.ELW(vector, **{'m': floor(1 + len(vector) ** 0.6), 'mean.est': mean_est})[0][0]
@@ -58,7 +50,7 @@ def elw2s(values, trend_order=1, taper='HC'):
     """
     # TODO: @taper parametresi 'Velasco' olarak atandığında hata alınır.
 
-    if isnull(values):
+    if mydata.isnull(values):
         return None
 
     vector = convert_Rvectors(values)
@@ -72,7 +64,7 @@ def elw2s(values, trend_order=1, taper='HC'):
 
 
 def gph(values, l_value=1):
-    if isnull(values):
+    if mydata.isnull(values):
         return None
     vector = convert_Rvectors(values)
     _gph = lmts.gph(vector, **{'m': floor(1 + len(vector) ** 0.6), 'l': l_value})[0]
@@ -80,7 +72,7 @@ def gph(values, l_value=1):
 
 
 def hou_perron(values):
-    if isnull(values):
+    if mydata.isnull(values):
         return None
     vector = convert_Rvectors(values)
     _hou_perron = lmts.Hou_Perron(vector, **{'m': floor(1 + len(vector) ** 0.6)})[0][0]
@@ -88,7 +80,7 @@ def hou_perron(values):
 
 
 def local_w(values):
-    if isnull(values):
+    if mydata.isnull(values):
         return None
     # TODO: @taper parametresi 'Velasco' olarak atandığında hata alınır.
     vector = convert_Rvectors(values)

@@ -100,3 +100,11 @@ def intersect(d, percent):
     for s in sets:
         result = result.intersection(s)
     return result
+
+
+def isnull(values) -> bool:
+    """
+    Check empty data
+    """
+    if isinstance(values, pd.Series) and values.dropna().size == 0:
+        return True

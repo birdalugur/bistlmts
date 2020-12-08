@@ -1,6 +1,7 @@
 import pandas as pd
 from numpy import nan
 import plotly.graph_objects as go
+import mydata
 
 
 def ohlc(time_series) -> dict:
@@ -11,6 +12,9 @@ def ohlc(time_series) -> dict:
         time_series : (list or pandas series)
     """
     _open, _high, _low, _close = nan, nan, nan, nan
+
+    if mydata.isnull(time_series):
+        return {'open': _open, 'high': _high, 'low': _low, 'close': _close}
 
     if isinstance(time_series, pd.Series):
         _time = time_series.index
