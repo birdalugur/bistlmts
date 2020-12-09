@@ -4,7 +4,7 @@ For documentation, use the docs() function.
 """
 
 from math import floor
-import pandas as pd
+import mydata
 
 from rpy2 import robjects
 from rpy2.robjects.packages import importr
