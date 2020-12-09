@@ -11,7 +11,7 @@ import pandas as pd
 folder_path = 'C:/Users/Ege Yazgan/OneDrive - Istanbul Bilgi Universitesi/BIST_Eylul/eq/'
 
 # Read all data in the specified folder
-data = mydata.read(folder_path)
+data = mydata.read_multidir(folder_path)
 
 # Calculate the middle price
 data['mid_price'] = (data['bid_price'] + data['ask_price']) / 2

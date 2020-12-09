@@ -57,7 +57,15 @@ def read(path: str, datecol: str = 'time') -> pd.DataFrame:
     return pd.concat(all_data)
 
 
-#
+def read_multidir(path):
+    from os import listdir
+    all_paths = map(lambda x: path + x + '/', listdir(path))
+    all_data = []
+    for _path in all_paths:
+        all_data.append(read(_path))
+    return pd.concat(all_data)
+
+
 def time_series(data: pd.DataFrame, col: str) -> pd.DataFrame:
     """
     Belirtilen sütundaki değerleri kullanarak zaman serisi oluşturun.
