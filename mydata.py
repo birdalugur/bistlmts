@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas.tseries.offsets as offset
 
 BIST30 = ["ARCLK", "ASELS", "BIMAS", "DOHOL", "EKGYO", "FROTO", "HALKB", "GARAN", "ISCTR", "KCHOL", "KOZAA", "KOZAL",
           "KRDMD", "AKBNK", "PETKM", "PGSUS", "SAHOL", "SISE", "EREGL", "SODA", "TAVHL", "TCELL", "THYAO", "TKFEN",
@@ -57,13 +58,28 @@ def read(path: str, datecol: str = 'time') -> pd.DataFrame:
     return pd.concat(all_data)
 
 
-def read_multidir(path):
+def read_multidir(path, start_date: str = None, end_date: str = None):
     from os import listdir
     all_paths = map(lambda x: path + x + '/', listdir(path))
+    if (start_date is not None) & (end_date is not None):
+        all_paths = file_date(list(all_paths), start_date, end_date)
     all_data = []
     for _path in all_paths:
         all_data.append(read(_path))
     return pd.concat(all_data)
+
+
+def file_date(paths: list, start: str, end: str) -> list:
+    """
+    paths : list of file paths
+    start : '2020-01'
+    end : '2020-03'
+    """
+    date_range = pd.date_range(start, end, freq='MS').to_list()
+    date_range = list(map(lambda x: x.strftime('%Y%m'), date_range))
+    _paths = pd.Series(paths)
+    _paths = _paths[_paths.str.contains('|'.join(date_range))]
+    return _paths.to_list()
 
 
 def time_series(data: pd.DataFrame, col: str) -> pd.DataFrame:
