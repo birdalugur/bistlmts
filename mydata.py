@@ -6,20 +6,6 @@ BIST30 = ["ARCLK", "ASELS", "BIMAS", "DOHOL", "EKGYO", "FROTO", "HALKB", "GARAN"
           "TOASO", "TSKB", "TTKOM", "TUPRS", "VAKBN", "YKBNK"]
 
 
-def download(symbols: list, start_date: str, end_date: str) -> pd.DataFrame:
-    """
-    Belirtilen BIST kodlarına ait verileri matrix apisini kullanarak alır.
-
-    Args:
-        symbols : Bist kodlarını içeren liste.
-        start_date : Veri için başlangıç tarihi.
-        end_date : Veri için bitiş tarihi.
-    Returns:
-        DataFrame
-    """
-    pass
-
-
 def is_bist30(x: str) -> bool:
     """
     Is the expression denoted by x a member of bist30?
@@ -96,19 +82,26 @@ def time_series(data: pd.DataFrame, col: str) -> pd.DataFrame:
     return data.pivot(index='time', columns='symbol', values=col)
 
 
-def sample():
+def sample(freq='30Min'):
     """
     Random verilerle örnek veri seti oluşturur.
     """
     from numpy.random import ranf
 
-    dates = pd.date_range(start='2020-10-01 00:00', end='2020-10-30 00:00', freq='30Min')
+    dates = pd.date_range(start='2020-10-01 00:00', end='2020-10-30 00:00', freq=freq)
 
-    bist_codes = pd.read_csv('data/bist_symbols.csv', squeeze=True)
+    bist_codes = BIST30
 
     data = (ranf(len(dates) * len(bist_codes)) * 10).reshape(len(dates), len(bist_codes))
 
     return pd.DataFrame(data, index=dates, columns=bist_codes)
+
+
+def random_nan(data):
+    import numpy as np
+    _bools = np.random.randint(0, 2, data.shape) == 1
+    data[_bools] = np.nan
+    return data
 
 
 def sort(x):

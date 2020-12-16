@@ -40,7 +40,9 @@ all_pairs = [(lambda x: x.dropna())(pair) for pair in all_pairs]
 # pairs concatenate in single df
 all_pairs = pd.concat(all_pairs, axis=1)
 
-all_pairs = all_pairs.resample('D').apply(lambda x: x.ffill())
+# fill nan values (ignore end of the day)
+all_pairs = all_pairs.apply(lambda x: x.resample('D').apply(lambda x: x[:x.last_valid_index()].ffill()))
+all_pairs = all_pairs.droplevel(0)
 
 # >>>>>> estimation >>>>>>>>>
 elw_data = all_pairs.resample('D').apply(elw)
