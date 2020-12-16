@@ -2,7 +2,7 @@ import mydata
 import numpy as np
 import itertools
 from lmts import elw, elw2s, gph, hou_perron, local_w
-from plot import candlestick, export_chart
+from plot import candlestick, export_chart, time_series
 
 import pandas as pd
 
@@ -41,7 +41,7 @@ all_pairs = [(lambda x: x.dropna())(pair) for pair in all_pairs]
 all_pairs = pd.concat(all_pairs, axis=1)
 
 # fill nan values (ignore end of the day)
-all_pairs = all_pairs.apply(lambda x: x.resample('D').apply(lambda x: x[:x.last_valid_index()].ffill()))
+all_pairs = all_pairs.resample('D').apply(lambda x: x.apply(lambda x: x[:x.last_valid_index()].ffill()))
 all_pairs = all_pairs.droplevel(0)
 
 # >>>>>> estimation >>>>>>>>>
@@ -71,7 +71,12 @@ fig.show()
 export_chart(fig, name='akbnk_arclk')
 # <<<<<< Candlestick <<<<<<<<<
 
+# Time Series Chart
+fig = time_series(akbnk_arclk, 'last', '1H')
+fig.show()
+
 # Export all charts
 for name in all_pairs.columns:
-    f = candlestick(all_pairs[name], 'D')
+    # f = candlestick(all_pairs[name], 'D')
+    f = time_series(all_pairs[name], 'last', '1H')
     export_chart(f, name)

@@ -73,3 +73,14 @@ def export_chart(fig: go.Figure, name: str, location: str = None):
     _path = location + '/' + name + '.html'
 
     plot(fig, auto_open=False, filename=_path)
+
+
+def time_series(data, func, offset: str):
+    _data = data.resample(offset).apply(func)
+    fig = go.Figure()
+    time = _data.index
+    values = _data.values
+    fig.add_trace(go.Scatter(x=time, y=values, mode='lines', name='lines'))
+    fig.update_xaxes(rangeslider_visible=True)
+    return fig
+
