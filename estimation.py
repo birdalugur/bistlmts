@@ -94,6 +94,7 @@ high_values = get_ohcl(ex_pair, freq='H', get='high')
 
 time = datetime.time(4, 0)
 
+low_values.loc[time]
 
 zero_low = get_period_data(low_values, time)
 zero_high = get_period_data(high_values, time)
@@ -102,19 +103,28 @@ zero_high = get_period_data(high_values, time)
 model = imlp.get_model(input_dim=5, output_dim=1, num_hidden_layers=2, num_units=[200, 200],
                        activation=['relu', 'relu'], beta=0.5)
 
-current_date = datetime.datetime(2020, 10, 30).date()
+current_date = datetime.datetime(2020, 10, 29).date()
+yesterday_date = datetime.datetime(2020, 10, 28).date()
 
-current_low = zero_low.loc[:, current_date].head(25)
-current_high = zero_high.loc[:, current_date].head(25)
+# >>>>> Test data >>>>>
+current_low = zero_low.loc[:, current_date].head(23)
+current_high = zero_high.loc[:, current_date].head(23)
+# <<<<< Test data <<<<<
 
-previous_high = zero_high.iloc[:, 1:6].head(25)
-previous_low = zero_low.iloc[:, 1:6].head(25)
+# >>>>> Training data >>>>>
+yesterday_low = zero_low.loc[:, yesterday_date].head(23)
+yesterday_high = zero_high.loc[:, yesterday_date].head(23)
 
-model.fit(x=[previous_high, previous_low], y=[current_high, current_low], epochs=10)
+previous_high = zero_high.iloc[:, 2:7].head(23)
+previous_low = zero_low.iloc[:, 2:7].head(23)
+# <<<<< Training data <<<<<
 
-pred_high = high_values.iloc[:, 7:12]
-pred_low = low_values.iloc[:, 7:12]
+model.fit(x=[previous_high, previous_low], y=[yesterday_high, yesterday_low], epochs=10)
 
-model.predict([previous_high, previous_low])
+pred_high = current_high.head(5).values.reshape(1,5)
+pred_low = current_low.head(5).values.reshape(1,5)
+
+print(pred_high,'\n',pred_low)
+model.predict([pred_high, pred_low])
 
 # <<<<<< impl estimation <<<<<<<<<

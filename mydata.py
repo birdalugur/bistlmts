@@ -88,7 +88,7 @@ def sample(freq='30Min'):
     """
     from numpy.random import ranf
 
-    dates = pd.date_range(start='2020-10-01 00:00', end='2020-10-30 00:00', freq=freq)
+    dates = pd.date_range(start='2020-10-01 00:00', end='2020-10-29 23:00', freq=freq)
 
     bist_codes = BIST30
 
