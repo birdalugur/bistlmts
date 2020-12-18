@@ -1,13 +1,15 @@
-import mydata
-import numpy as np
 import itertools
+import numpy as np
+import pandas as pd
+import datetime
+
+import mydata
 from lmts import elw, elw2s, gph, hou_perron, local_w
 from plot import candlestick, export_chart, time_series
-
-import pandas as pd
+from calc import get_ohcl, get_period_data
+from imlp import imlp
 
 # directory path to read data
-#
 folder_path = 'data/shared/tob_changes_bist/'
 
 # Read all data in the specified folder
@@ -26,6 +28,8 @@ mid_price = mid_price.groupby(pd.Grouper(freq='D')).resample('1Min').mean().drop
 
 # Calculate natural logarithms
 log_mid = np.log(mid_price)
+
+log_mid = mydata.sample(freq='1Min')
 
 # Pair names
 pair_names = list(itertools.combinations(log_mid.columns, 2))
@@ -80,3 +84,37 @@ for name in all_pairs.columns:
     # f = candlestick(all_pairs[name], 'D')
     f = time_series(all_pairs[name], 'last', '1H')
     export_chart(f, name)
+
+# >>>>>> impl estimation >>>>>>>>>
+
+ex_pair = all_pairs['ARCLK_ASELS']
+
+low_values = get_ohcl(ex_pair, freq='H', get='low')
+high_values = get_ohcl(ex_pair, freq='H', get='high')
+
+time = datetime.time(0, 0)
+
+
+zero_low = get_period_data(low_values, time)
+zero_high = get_period_data(high_values,time)
+
+
+model = imlp.get_model(input_dim=5, output_dim=1, num_hidden_layers=2, num_units=[200, 200],
+                       activation=['relu', 'relu'], beta=0.5)
+
+current_date = datetime.datetime(2020, 10, 29).date()
+
+current_low = low_values[current_date]
+current_high = high_values[current_date]
+
+previous_high = high_values.iloc[:, 1:6]
+previous_low = low_values.iloc[:, 1:6]
+
+model.fit(x=[previous_high, previous_low], y=[current_high, current_low], epochs=10)
+
+pred_high = high_values.iloc[:, 7:12]
+pred_low = low_values.iloc[:, 7:12]
+
+model.predict([pred_high, pred_low])
+
+# <<<<<< impl estimation <<<<<<<<<
