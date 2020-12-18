@@ -92,29 +92,29 @@ ex_pair = all_pairs['ARCLK_ASELS']
 low_values = get_ohcl(ex_pair, freq='H', get='low')
 high_values = get_ohcl(ex_pair, freq='H', get='high')
 
-time = datetime.time(0, 0)
+time = datetime.time(4, 0)
 
 
 zero_low = get_period_data(low_values, time)
-zero_high = get_period_data(high_values,time)
+zero_high = get_period_data(high_values, time)
 
 
 model = imlp.get_model(input_dim=5, output_dim=1, num_hidden_layers=2, num_units=[200, 200],
                        activation=['relu', 'relu'], beta=0.5)
 
-current_date = datetime.datetime(2020, 10, 29).date()
+current_date = datetime.datetime(2020, 10, 30).date()
 
-current_low = low_values[current_date]
-current_high = high_values[current_date]
+current_low = zero_low.loc[:, current_date].head(25)
+current_high = zero_high.loc[:, current_date].head(25)
 
-previous_high = high_values.iloc[:, 1:6]
-previous_low = low_values.iloc[:, 1:6]
+previous_high = zero_high.iloc[:, 1:6].head(25)
+previous_low = zero_low.iloc[:, 1:6].head(25)
 
 model.fit(x=[previous_high, previous_low], y=[current_high, current_low], epochs=10)
 
 pred_high = high_values.iloc[:, 7:12]
 pred_low = low_values.iloc[:, 7:12]
 
-model.predict([pred_high, pred_low])
+model.predict([previous_high, previous_low])
 
 # <<<<<< impl estimation <<<<<<<<<
