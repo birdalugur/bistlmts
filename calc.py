@@ -55,11 +55,11 @@ def get_ohcl(data: pd.Series, freq: str, get: str) -> pd.DataFrame:
     return _data
 
 
-def get_period_data(data: pd.DataFrame, time: datetime.time) -> pd.DataFrame:
-    perioddata = data.loc[time]
-
-    perioddata = perioddata.to_frame(name=perioddata.index[-1])
-
+def get_period_data(data: pd.Series) -> pd.DataFrame:
+    """
+    Get data for the specified time.
+    """
+    perioddata = data.to_frame(name=data.index.max())
     days = perioddata.index.sort_values(ascending=False)
 
     for i in range(len(days)):
@@ -67,4 +67,42 @@ def get_period_data(data: pd.DataFrame, time: datetime.time) -> pd.DataFrame:
             break
         perioddata[days[i + 1]] = perioddata[days[i]].shift()
 
-    return perioddata.sort_index(ascending=False)
+    return perioddata.sort_index(ascending=False).reset_index(drop=True)
+
+
+def get_period_data2(data: pd.Series, date) -> pd.DataFrame:
+    """
+    Get data for the specified time.
+    """
+    data = data.dropna()
+    start = date - datetime.timedelta(len(data) - 1)
+    end = date
+    days = pd.date_range(start, end, freq='D').sort_values(ascending=False)
+    perioddata = data.to_frame(name=days.max()).dropna()
+
+    for i in range(len(days)):
+        if i == len(days) - 1:
+            break
+        perioddata[days[i + 1]] = perioddata[days[i]].shift()
+
+    # perioddata = perioddata.apply(lambda x: x.dropna().reset_index(drop=True))
+
+    return perioddata[::-1]
+
+
+def to_period(data, timestep=1):
+    X, Y = [], []
+    for i in range(len(data) - timestep - 1):
+        a = data[i:(i + timestep), 0]  # i=0,1,2,3,4,.....
+        X.append(a)
+        b = data[i + timestep, 0]
+        Y.append(b)
+
+    return np.array(X), np.array(Y).reshape(-1, 1)
+
+
+def get_period(data, time, get):
+    low_values = get_ohcl(data, freq='H', get=get)
+    low_values = low_values.loc[time]
+    low_values = get_period_data(low_values)
+    return low_values
