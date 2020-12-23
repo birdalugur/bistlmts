@@ -2,6 +2,7 @@ import pandas as pd
 from numpy import nan
 import mydata
 import datetime
+import numpy as np
 
 
 def ohlc(time_series) -> dict:

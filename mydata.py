@@ -27,7 +27,7 @@ def read(path: str, datecol: str = 'time') -> pd.DataFrame:
     from os import listdir
 
     dt = {'symbol': 'str', 'bid_price': 'float64', 'ask_price': 'float64'}
-
+    path = path + '/eq/'
     all_paths = map(lambda x: path + x, listdir(path))
     all_data = []
     for _path in all_paths:

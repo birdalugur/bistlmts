@@ -1,11 +1,12 @@
 import calc
+import plotly.express as px
 
 ex_pair = all_pairs['ARCLK_ASELS']
 
 time = datetime.time(12, 0)
 today = datetime.date(2020, 10, 29)
 dim = 5
-train_test_n = 20
+train_test_n = 15
 
 low = get_ohcl(ex_pair, freq='H', get='low').loc[time]
 high = get_ohcl(ex_pair, freq='H', get='high').loc[time]
@@ -38,3 +39,13 @@ loss_low = np.sqrt(mean_squared_error(y_test_low, y_pred_low))
 
 loss_low
 loss_high
+
+
+import plotly.express as px
+
+fig = px.line(x)
+fig.show()
+
+
+x=pd.DataFrame([y_pred_high.reshape(-1,8)[0],y_test_high.reshape(-1,8)[0]]).T
+x.index = test_hig[dim:13].index
