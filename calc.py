@@ -3,6 +3,11 @@ from numpy import nan
 import mydata
 import datetime
 import numpy as np
+import calc
+import plotly.express as px
+from sklearn.model_selection import train_test_split
+import datetime
+from importlib import reload
 
 
 def ohlc(time_series) -> dict:
@@ -48,8 +53,8 @@ def get_ohcl(data: pd.Series, freq: str, get: str) -> pd.DataFrame:
     """
     ohcl_data = data.resample(freq).apply(ohlc)
     _data = ohcl_data.apply(lambda x: x[get])
-    date = _data.reset_index()['index'].dt.date
-    time = _data.reset_index()['index'].dt.time
+    date = _data.reset_index().iloc[:, 0].dt.date
+    time = _data.reset_index().iloc[:, 0].dt.time
     vals = _data.values
     _data = pd.DataFrame({'date': date, 'time': time, 'vals': vals})
     _data = _data.pivot(index='time', columns='date', values='vals')
@@ -107,3 +112,30 @@ def get_period(data, time, get):
     low_values = low_values.loc[time]
     low_values = get_period_data(low_values)
     return low_values
+
+
+def imlp(data: pd.Series, time: datetime.time, dim: 1) -> dict:
+    low_values = get_ohcl(data, freq='H', get='low').loc[time].dropna()
+    high_values = get_ohcl(data, freq='H', get='high').loc[time].dropna()
+
+    train_low, test_low = train_test_split(low_values, shuffle=False)
+    train_high, test_high = train_test_split(high_values, shuffle=False)
+
+    X_train_low, Y_train_low = to_period(train_low.values.reshape(-1, 1), dim)
+    X_train_high, Y_train_high = to_period(train_high.values.reshape(-1, 1), dim)
+
+    x_test_low, y_test_low = to_period(test_low.values.reshape(-1, 1), dim)
+    x_test_high, y_test_high = to_period(test_high.values.reshape(-1, 1), dim)
+
+    model = imlp.get_model(input_dim=dim, output_dim=1, num_hidden_layers=2, num_units=[200, 200],
+                           activation=['relu', 'relu'], beta=0.5)
+
+    model.fit(x=[X_train_high, X_train_low], y=[Y_train_high, Y_train_low], epochs=10)
+
+    y_pred_high, y_pred_low = model.predict([x_test_high, x_test_low])
+
+    results = {'actual': {'high': y_test_high, 'low': y_test_low},
+               'predicted': {'high': y_pred_high, 'low': y_pred_low},
+               'X': {'high': x_test_high, 'low': x_test_low}}
+
+    return results

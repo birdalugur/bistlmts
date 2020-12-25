@@ -10,10 +10,12 @@ from calc import get_ohcl, get_period_data
 from imlp import imlp
 
 # directory path to read data
-folder_path = 'data/shared/tob_changes_bist/'
+folder_path = 'data/BIST_Eylul/'
 
 # Read all data in the specified folder
 data = mydata.read_multidir(folder_path, start_date='2020-01', end_date='2020-03')
+
+# data = mydata.read(folder_path)
 
 # Calculate the middle price
 data['mid_price'] = (data['bid_price'] + data['ask_price']) / 2
@@ -29,8 +31,6 @@ mid_price = mid_price.groupby(pd.Grouper(freq='D')).resample('1Min').mean().drop
 # Calculate natural logarithms
 log_mid = np.log(mid_price)
 
-log_mid = mydata.sample(freq='1Min')
-
 # Pair names
 pair_names = list(itertools.combinations(log_mid.columns, 2))
 
@@ -38,8 +38,6 @@ pair_names = list(itertools.combinations(log_mid.columns, 2))
 all_pairs = list(map(lambda x: (log_mid.loc[:, x[0]] - log_mid.loc[:, x[1]])
                      ._set_name('_'.join(x)), pair_names))
 
-# Remove NaN's
-all_pairs = [(lambda x: x.dropna())(pair) for pair in all_pairs]
 
 # pairs concatenate in single df
 all_pairs = pd.concat(all_pairs, axis=1)
@@ -62,22 +60,7 @@ sorted_elw = elw_data.apply(mydata.sort, axis=1)
 # intersection of the lowest 10 percent
 mydata.intersect(sorted_elw, 10)
 
-# >>>>>> Candlestick >>>>>>>>>
-# Get any pair.
-akbnk_arclk = all_pairs['AKBNK_ARCLK']
 
-# Create a figure. 'D' describes daily aggregation.
-fig = candlestick(akbnk_arclk, 'D')
-
-# Show graph
-fig.show()
-
-export_chart(fig, name='akbnk_arclk')
-# <<<<<< Candlestick <<<<<<<<<
-
-# Time Series Chart
-fig = time_series(akbnk_arclk, 'last', '1H')
-fig.show()
 
 # Export all charts
 for name in all_pairs.columns:

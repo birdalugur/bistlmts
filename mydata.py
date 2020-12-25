@@ -16,7 +16,7 @@ def is_bist30(x: str) -> bool:
     return False
 
 
-def read(path: str, datecol: str = 'time') -> pd.DataFrame:
+def read(path: str, datecol: str = 'time', dt=None) -> pd.DataFrame:
     """
     Bir klasörden csv verilerini okuyun.
 
@@ -26,8 +26,6 @@ def read(path: str, datecol: str = 'time') -> pd.DataFrame:
     """
     from os import listdir
 
-    dt = {'symbol': 'str', 'bid_price': 'float64', 'ask_price': 'float64'}
-    path = path + '/eq/'
     all_paths = map(lambda x: path + x, listdir(path))
     all_data = []
     for _path in all_paths:
@@ -44,14 +42,15 @@ def read(path: str, datecol: str = 'time') -> pd.DataFrame:
     return pd.concat(all_data)
 
 
-def read_multidir(path, start_date: str = None, end_date: str = None):
+def read_multidir(path, start_date: str = None, end_date: str = None, suffix='/eq/'):
     from os import listdir
+    dt = {'symbol': 'str', 'bid_price': 'float64', 'ask_price': 'float64'}
     all_paths = map(lambda x: path + x + '/', listdir(path))
     if (start_date is not None) & (end_date is not None):
         all_paths = file_date(list(all_paths), start_date, end_date)
     all_data = []
     for _path in all_paths:
-        all_data.append(read(_path))
+        all_data.append(read(_path + suffix, dt=dt))
     return pd.concat(all_data)
 
 
