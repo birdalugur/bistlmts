@@ -3,6 +3,9 @@ import plotly.express as px
 from sklearn.model_selection import train_test_split
 import datetime
 from importlib import reload
+import pandas as pd
+
+all_pairs = pd.read_csv('output/all_pairs.csv', parse_dates=['time'], index_col='time')
 
 ex_pair = all_pairs['ARCLK_ASELS']
 time = datetime.time(12, 0)
@@ -26,9 +29,6 @@ model = imlp.get_model(input_dim=dim, output_dim=1, num_hidden_layers=2, num_uni
 model.fit(x=[X_train_high, X_train_low], y=[Y_train_high, Y_train_low], epochs=10)
 
 y_pred_high, y_pred_low = model.predict([x_test_high, x_test_low])
-
-
-
 
 from sklearn.metrics import mean_squared_error
 

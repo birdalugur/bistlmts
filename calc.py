@@ -98,10 +98,10 @@ def get_period_data2(data: pd.Series, date) -> pd.DataFrame:
 
 def to_period(data, timestep=1):
     X, Y = [], []
-    for i in range(len(data) - timestep - 1):
-        a = data[i:(i + timestep), 0]  # i=0,1,2,3,4,.....
+    for i in range(len(data) - timestep):
+        a = data[i:(i + timestep)]  # i=0,1,2,3,4,.....
         X.append(a)
-        b = data[i + timestep, 0]
+        b = data[i + timestep]
         Y.append(b)
 
     return np.array(X), np.array(Y).reshape(-1, 1)
