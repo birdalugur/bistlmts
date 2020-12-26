@@ -8,6 +8,7 @@ import plotly.express as px
 from sklearn.model_selection import train_test_split
 import datetime
 from importlib import reload
+import statsmodels.api as sm
 
 
 def ohlc(time_series) -> dict:
@@ -139,3 +140,14 @@ def imlp(data: pd.Series, time: datetime.time, dim: 1) -> dict:
                'X': {'high': x_test_high, 'low': x_test_low}}
 
     return results
+
+
+def residuals(first, second):
+    first_symbol = first.dropna().values.reshape(-1, 1)
+    second_symbol = second.dropna().values.reshape(-1, 1)
+
+    model = sm.OLS(second_symbol, first_symbol).fit()
+
+    rasid = pd.Series(model.resid, name='_'.join((first.name, second.name)))
+
+    return rasid

@@ -8,7 +8,7 @@ from os import mkdir
 import mydata
 from lmts import elw, elw2s, gph, hou_perron, local_w
 from plot import candlestick, export_chart, time_series
-from calc import get_ohcl, get_period_data
+from calc import get_ohcl, get_period_data, residuals
 from imlp import imlp
 
 # directory path to read data
@@ -32,11 +32,16 @@ mid_price = mid_price.groupby(pd.Grouper(freq='D')).resample('1Min').mean().drop
 mid_price = mid_price.resample('D').apply(lambda x: x.apply(lambda x: x[:x.last_valid_index()].ffill()))
 mid_price = mid_price.droplevel(0)
 
+# Pair names
+pair_names = list(itertools.combinations(mid_price.columns, 2))
+
+# Residuals
+all_pairs = pd.concat(
+    [residuals(mid_price[first], mid_price[second]) for first, second in pair_names], axis=1
+).set_index(mid_price.index)
+
 # Calculate natural logarithms
 log_mid = np.log(mid_price)
-
-# Pair names
-pair_names = list(itertools.combinations(log_mid.columns, 2))
 
 # Calculate the difference of all pairs (435 pair)
 all_pairs = list(map(lambda x: (log_mid.loc[:, x[0]] - log_mid.loc[:, x[1]])
